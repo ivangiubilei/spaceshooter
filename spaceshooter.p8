@@ -2,32 +2,36 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 function _init()
+	invuln = 0
 	old_score = 0
 	score = 0
 	player = {x=64, y=100, animation=1}
 	state = "game"
 	init_health()
 	init_fire()
-	init_shoot()
 	init_starfield()
 	init_enemies()
-
+	init_shoot()
+	
+	frame_counter = 0
 end
 
 function _update()
+	frame_counter += 1
+	
 	if state == "game" then
 		update_health()
 		moveplayer() -- movement
 		update_fire() -- fire animation
+		
 		-- shoot
-		if btnp(🅾️) then shoot() end
+		if btnp(🅾️) then 
+			shoot() 
+		end
 	
 		update_enemies()
 		
-		increment_speed()
-		
-		
-	else
+		increment_speed()	
 	end
 	
 end
@@ -40,15 +44,23 @@ function _draw()
 		draw_health()
 		bullet_draw()
 		draw_enemies()
- 
 		draw_score(score)		
+	
+	
 		-- draw player
-		spr(player.animation, player.x, player.y)
+		-- if invuln blink
+		if invuln <= 0 then
+			spr(player.animation, player.x, player.y)
+		elseif sin(frame_counter/10) < 0 then
+			spr(player.animation, player.x, player.y)
+		end
+		
 		draw_fire() -- draw fire animation
-	elseif state=="lose" then
-		draw_lose()
+		
+		elseif state=="lose" then
+			draw_lose()
+	
 	end
-
 end
 
 
@@ -71,8 +83,6 @@ function moveplayer()
 	else
 		player.animation=1
 	end
-
-	
 		
 	if btn(⬆️) then
 	 player.y-=1 
@@ -87,18 +97,21 @@ function moveplayer()
 			player.y = 120
 		end
 	end
+	
 end
 
 -- shooting
 function init_shoot()
-	bullet_list = {}
-	bullet_speed = 3
+	bullet_list={}
+	bullet_speed=3
+	light_size=4 -- default value
+	light_radius=0
 end
 
 function shoot()
 	add(bullet_list, {x=player.x, y=player.y})
 	sfx(0)
-end
+	end
 
 function bullet_draw()
 	-- if bullet ready: shoot
@@ -165,8 +178,12 @@ function update_fire()
 
 function draw_fire()
 	-- start waiting
+	if invuln <= 0 then
+			spr(fire_sprite, player.x, player.y+8)
+	elseif sin(frame_counter/10) < 0 then
+			spr(fire_sprite, player.x, player.y+8)
+	end
 	
-	spr(fire_sprite, player.x, player.y+8)
 end
 
 function count_digits(n)
@@ -224,6 +241,7 @@ end
 
 function init_enemies()
  last_time = 0
+ last_time_inv = 0
 	interval = 3 -- every three seconds
 	
 	enemy_count = 1
@@ -235,36 +253,51 @@ function init_enemies()
 end
 
 function update_enemies()
+	function update_enemies()
+	-- enemy movement and removal
 	for enemy in all(enemies) do
 		enemy.y += 1
-		
-		-- if offscreen
+
 		if enemy.y > 128 then
 			del(enemies, enemy)
-			interval += 0.01*score
+			interval += 0.01 * score
 		end
-		
-		if collision(enemy, player) then
-			reduce_health()	
-			del(enemies, enemy)
+	end
+
+	-- check for player-enemy collisions
+	if invuln <= 0 then
+		for enemy in all(enemies) do
+			if collision(enemy, player) then
+				reduce_health()
+				invuln = 60
+				break -- only take one hit
+			end
 		end
-		
+	end
+
+	for enemy in all(enemies) do
 		for bullet in all(bullet_list) do
 			if collision(enemy, bullet) then
 				del(enemies, enemy)
 				del(bullet_list, bullet)
 				score += 1	
 				sfx(2)
-			end	
+				break
+			end
 		end
-		
 	end
-	
-	-- every three seconds spawn enemy
- if time() - last_time >= interval then
-  last_time = time()
-  add(enemies, random_asteroid())
- end
+
+	-- spawn enemies
+	if time() - last_time >= interval then
+		last_time = time()
+		add(enemies, random_asteroid())
+	end
+
+	if invuln > 0 then
+		invuln -= 1
+	end
+end
+
 
 end
 
@@ -288,7 +321,6 @@ function update_health()
 	if #health == 0 then
 		state = "lose"
 	end
-	
 end
 
 function draw_health()
@@ -298,7 +330,6 @@ function draw_health()
 end
 
 function reduce_health()
-	
 	for h in all(health) do
 		del(health, h)
 		break	
@@ -325,6 +356,8 @@ function draw_score(score_)
 	local text = "score: "
 	print(text .. score_, 100-#text*3-count_digits(score)*3, 8, 7)
 end
+-->8
+-- particles
 __gfx__
 00000000000220000002200000022000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000002882000028820000288200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
