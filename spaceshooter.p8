@@ -412,7 +412,7 @@ function update_preshoot()
 	for i=1, 5 do
 		local particle = {
 			x=player.x+4,
-			y=player.y	,
+			y=player.y,
 			xsp=rnd(4)-2,
 			ysp=-rnd(2),
 			rad=rnd(2),
