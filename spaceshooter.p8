@@ -111,6 +111,7 @@ function init_shoot()
 end
 
 function shoot()
+	update_preshoot()
 	add(bullet_list, {x=player.x, y=player.y})
 	sfx(0)
 	end
@@ -118,6 +119,7 @@ function shoot()
 function bullet_draw()
 	-- if bullet ready: shoot
 	for el in all(bullet_list) do
+		draw_preshoot()
 		spr(4, el.x, el.y)
 		el.y -= bullet_speed
 		
@@ -365,7 +367,7 @@ end
 
 function init_particles()
 	explosion_p = {}
-	
+	preshoot_p = {}
 end
 
 function update_explosion(en)
@@ -375,7 +377,6 @@ function update_explosion(en)
 			y=en.y,
 			xsp=rnd(4)-2,
 			ysp=rnd(4)-2,
-			rad=rnd(3),
 			size=rnd(4),
 			life=rnd(15)
 		}
@@ -400,12 +401,50 @@ function draw_explosion()
 		p.y += p.ysp
 		p.xsp *= 0.7
 		p.ysp *= 0.7
+		
 		if p.life > 30 then
-   del(particles, p)
+   del(explosion_p, p)
   end
 	end
 end
 
+function update_preshoot()
+	for i=1, 5 do
+		local particle = {
+			x=player.x+4,
+			y=player.y	,
+			xsp=rnd(4)-2,
+			ysp=-rnd(2),
+			rad=rnd(2),
+			life=rnd(5)
+		}
+		add(preshoot_p, particle)
+	end
+end
+
+function draw_preshoot()
+	for p in all(preshoot_p) do
+		p.life += 1
+		
+		local colors = {10, 9, 8}
+		
+		-- choose color based on life
+		local index = flr(p.life / 6,6) + 1
+		
+		if index <= #colors then
+		    circfill(p.x, p.y, p.size, colors[index])
+		end
+
+		p.x += p.xsp
+		p.y += p.ysp
+		p.xsp *= 0.7
+		p.ysp *= 0.7
+		
+		if p.life > 30 then
+   del(preshoot_p, p)
+  end
+	end
+end
 __gfx__
 00000000000220000002200000022000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000002882000028820000288200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
