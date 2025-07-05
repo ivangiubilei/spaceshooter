@@ -392,7 +392,7 @@ function init_wavetext()
 	wavetext_counter_close = 0
 	show_wave = true
 	can_change_wave = true
-	kills_per_wave = 2
+	kills_per_wave = 10
 	waves = {
 		"aliens",
 		"infinite"
