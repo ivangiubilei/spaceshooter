@@ -221,7 +221,7 @@ function collision(a, b)
 	
 	local b_top = b.y
 	local b_left = b.x
-	local b_bottom = a_top+7
+	local b_bottom = b_top+7
 	local b_right = b_left+7
 	
 	if a_top > b_bottom then return false end
@@ -264,7 +264,7 @@ end
 
 function update_enemies()
 	function update_enemies()
-	-- enemy movement and removal
+	-- enemy movement
 	for enemy in all(enemies) do
 		enemy.y += 1
 
